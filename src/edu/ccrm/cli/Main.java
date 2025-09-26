@@ -23,7 +23,7 @@ public class Main {
     private static final CourseService courseService = new CourseServiceImpl();
     private static final EnrollmentService enrollmentService = new EnrollmentServiceImpl();
     private static final ImportExportService importExportService = new ImportExportService();
-    private static final BackupService backupService = new BackupService(); // NEWLY ADDED
+    private static final BackupService backupService = new BackupService();
     private static final Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
@@ -39,17 +39,16 @@ public class Main {
                     handleStudentMenu();
                     break;
                 case 2:
-                    System.out.println("Course Management not yet implemented.");
+                    // This is now implemented to fix the warning
+                    handleCourseMenu();
                     break;
                 case 3:
-                    // This case is now implemented
                     handleEnrollmentMenu();
                     break;
                 case 4:
                     handleImportExportMenu();
                     break;
                 case 5:
-                    // This case is now implemented
                     handleBackupMenu();
                     break;
                 case 0:
@@ -74,7 +73,6 @@ public class Main {
     }
     
     private static void handleStudentMenu() {
-        // ... (This method remains unchanged from the previous version) ...
         while (true) {
             System.out.println("\n--- Student Management ---");
             System.out.println("1. Add a new Student");
@@ -118,8 +116,69 @@ public class Main {
         }
     }
     
+    // NEW METHOD TO FIX THE WARNING ON courseService
+    private static void handleCourseMenu() {
+        System.out.println("\n--- Course Management ---");
+        System.out.println("1. List all Courses");
+        System.out.println("0. Back to Main Menu");
+        System.out.print("Enter your choice: ");
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+
+        if (choice == 1) {
+            System.out.println("\n--- All Courses ---");
+            if (courseService.getAllCourses().isEmpty()) {
+                System.out.println("No courses found in the system.");
+            } else {
+                // Here we are now USING the courseService variable
+                for (edu.ccrm.domain.Course course : courseService.getAllCourses()) {
+                    System.out.println(course); 
+                }
+            }
+        }
+    }
+
+    private static void handleEnrollmentMenu() {
+        System.out.println("\n--- Manage Enrollments & Grades ---");
+        System.out.println("1. Enroll Student in a Course");
+        System.out.println("2. Assign Grade to Student");
+        System.out.println("0. Back to Main Menu");
+        System.out.print("Enter your choice: ");
+
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+
+        if (choice == 1) {
+            System.out.print("Enter Student ID: ");
+            int studentId = scanner.nextInt();
+            scanner.nextLine();
+            System.out.print("Enter Course Code (e.g., CS101): ");
+            String courseCode = scanner.nextLine();
+
+            try {
+                enrollmentService.enrollStudent(studentId, courseCode);
+            } catch (DuplicateEnrollmentException e) {
+                System.err.println("Error: " + e.getMessage());
+            }
+        } else if (choice == 2) {
+            System.out.print("Enter Student ID: ");
+            int studentId = scanner.nextInt();
+            scanner.nextLine();
+            System.out.print("Enter Course Code: ");
+            String courseCode = scanner.nextLine();
+            System.out.print("Enter Grade (S, A, B, C, D, F): ");
+            String gradeInput = scanner.nextLine().toUpperCase();
+            
+            try {
+                Grade grade = Grade.valueOf(gradeInput);
+                enrollmentService.assignGrade(studentId, courseCode, grade);
+            } catch (IllegalArgumentException e) {
+                System.err.println("Invalid grade entered. Please use S, A, B, C, D, or F.");
+            }
+        }
+    }
+
     private static void handleImportExportMenu() {
-        // ... (This method also remains unchanged) ...
         System.out.println("\n--- Import/Export Data ---");
         String studentsFilePath = "data/students.csv";
         System.out.println("Using default file path: " + studentsFilePath);
@@ -144,59 +203,11 @@ public class Main {
                 System.out.println("Invalid choice.");
         }
     }
-
-    // ==========================================================
-    // NEW METHOD FOR PHASE 5: HANDLING ENROLLMENTS AND GRADES
-    // ==========================================================
-    private static void handleEnrollmentMenu() {
-        System.out.println("\n--- Manage Enrollments & Grades ---");
-        System.out.println("1. Enroll Student in a Course");
-        System.out.println("2. Assign Grade to Student");
-        System.out.println("0. Back to Main Menu");
-        System.out.print("Enter your choice: ");
-
-        int choice = scanner.nextInt();
-        scanner.nextLine();
-
-        if (choice == 1) {
-            System.out.print("Enter Student ID: ");
-            int studentId = scanner.nextInt();
-            scanner.nextLine();
-            System.out.print("Enter Course Code (e.g., CS101): ");
-            String courseCode = scanner.nextLine();
-
-            // Here we use a try-catch block to handle our custom exception
-            try {
-                enrollmentService.enrollStudent(studentId, courseCode);
-            } catch (DuplicateEnrollmentException e) {
-                System.err.println("Error: " + e.getMessage());
-            }
-        } else if (choice == 2) {
-            System.out.print("Enter Student ID: ");
-            int studentId = scanner.nextInt();
-            scanner.nextLine();
-            System.out.print("Enter Course Code: ");
-            String courseCode = scanner.nextLine();
-            System.out.print("Enter Grade (S, A, B, C, D, F): ");
-            String gradeInput = scanner.nextLine().toUpperCase();
-            
-            try {
-                // Convert the user's string input to a Grade enum constant
-                Grade grade = Grade.valueOf(gradeInput);
-                enrollmentService.assignGrade(studentId, courseCode, grade);
-            } catch (IllegalArgumentException e) {
-                System.err.println("Invalid grade entered. Please use S, A, B, C, D, or F.");
-            }
-        }
-    }
     
-    // ==========================================================
-    // NEW METHOD FOR PHASE 5: HANDLING BACKUP AND UTILITIES
-    // ==========================================================
     private static void handleBackupMenu() {
         System.out.println("\n--- Backup & Utilities ---");
-        String studentFile = "data/students.csv"; // Example source file
-        String backupDir = "backups";             // Example destination directory
+        String studentFile = "data/students.csv";
+        String backupDir = "backups";
 
         System.out.println("1. Create a backup of student data");
         System.out.println("2. Calculate total size of backups directory (Recursive)");
@@ -212,7 +223,6 @@ public class Main {
                 backupService.backupData(studentFile, backupDir);
                 break;
             case 2:
-                // Here we call the recursive utility method
                 try {
                     long size = FileUtils.calculateDirectorySize(Paths.get(backupDir));
                     System.out.printf("Total size of '%s' directory: %,d bytes%n", backupDir, size);

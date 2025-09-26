@@ -1,13 +1,19 @@
 package edu.ccrm.service;
 
 import edu.ccrm.domain.Grade;
-// We will create these custom exceptions in a later phase.
-// For now, just add the import statements. Eclipse will show an error, which is OK.
-// import edu.ccrm.exception.CourseNotFoundException;
-// import edu.ccrm.exception.StudentNotFoundException;
+import edu.ccrm.exception.DuplicateEnrollmentException; // <-- The necessary import
 
 public interface EnrollmentService {
-    // The 'throws' clause indicates that this method might fail in specific ways.
-    void enrollStudent(int studentId, String courseCode); // throws StudentNotFoundException, CourseNotFoundException;
-    void assignGrade(int studentId, String courseCode, Grade grade); // throws StudentNotFoundException, CourseNotFoundException;
+
+    /**
+     * Enrolls a student in a course.
+     * @throws DuplicateEnrollmentException if the student is already enrolled in the course.
+     */
+    // This is the line that fixes the error. We are adding "throws DuplicateEnrollmentException".
+    void enrollStudent(int studentId, String courseCode) throws DuplicateEnrollmentException;
+    
+    /**
+     * Assigns a grade to a student for a specific course enrollment.
+     */
+    void assignGrade(int studentId, String courseCode, Grade grade);
 }
